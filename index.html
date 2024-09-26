@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSEM-VISAYAS CHAPTER MEMBERSHIP STATUS LOOK-UP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: url('bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        input {
+            padding: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>PSEM-VISAYAS CHAPTER</h1>
+    <h2>MEMBERSHIP STATUS LOOK-UP</h2>
+    <p>Enter your full name in the format LAST NAME, FIRST NAME, using ALL CAPS.<br>Example: DELA CRUZ, JUAN</p>
+    <input type="text" id="nameInput" placeholder="(Enter Full Name)" />
+    <button onclick="checkMembership()">Check Status</button>
+    <div class="result" id="result"></div>
+</body>
+    <script>
+    let membershipData = {};
+
+    async function fetchMembershipData() {
+        const response = await fetch('https://docs.google.com/spreadsheets/d/1Klq9qHlvkAPZ_Inf00ql-0hi-1WEAUZ4er_BvZDybno/pub?output=csv');
+        const data = await response.text();
+        const rows = data.split('\n').slice(1); // Skip header
+        rows.forEach(row => {
+            const [lastName, firstName, , , status] = row.split(','); // Read necessary columns only
+            if (lastName && firstName) {
+                const fullName = `${lastName.trim()}, ${firstName.trim()}`; // Create key from last and first names
+                membershipData[fullName] = status.trim(); // Store status
+            }
+        });
+        console.log(membershipData); // Check loaded data
+    }
+
+    fetchMembershipData();
+
+    function checkMembership() {
+        const name = document.getElementById("nameInput").value;
+        const status = membershipData[name] || "Not found"; // Look up by constructed full name
+        const resultElement = document.getElementById("result");
+
+        resultElement.innerText = `Membership Status: ${status}`;
+
+        // Change text color based on status
+        switch (status.toUpperCase()) {
+            case "ACTIVE":
+            case "LIFETIME":
+                resultElement.style.color = "blue";
+                break;
+            case "INACTIVE":
+                resultElement.style.color = "red";
+                break;
+            case "TRANSFERRED":
+                resultElement.style.color = "black";
+                break;
+            default:
+                resultElement.style.color = "black"; // Default for "Not found"
+        }
+    }
+</script>
+
+</body>
+</html>
